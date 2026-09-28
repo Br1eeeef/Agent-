@@ -1,0 +1,7 @@
+build/
+.vscode/
+.idea/
+*.user
+*.user.*
+data/*.tmp
+

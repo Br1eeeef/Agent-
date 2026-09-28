@@ -1,0 +1,9 @@
+{
+  "memories": [
+    {"id":"profile-001","content":"用户是计算机科学与技术专业学生","type":"profile","importance":5,"createdAt":1760000000,"updatedAt":1760000000,"lastAccessedAt":1760000000,"keywords":["专业","计算机"]},
+    {"id":"profile-002","content":"用户通常晚上八点开始学习","type":"profile","importance":4,"createdAt":1760000100,"updatedAt":1760000100,"lastAccessedAt":1760000100,"keywords":["学习时间","晚上"]},
+    {"id":"plan-001","content":"本周需要复习高等数学第二章","type":"plan","importance":5,"createdAt":1760000200,"updatedAt":1760000200,"lastAccessedAt":1760000200,"keywords":["高数","复习"]},
+    {"id":"event-001","content":"星期五提交程序设计实践作业","type":"event","importance":5,"createdAt":1760000300,"updatedAt":1760000300,"lastAccessedAt":1760000300,"keywords":["作业","截止日期"]},
+    {"id":"conversation-001","content":"用户询问过循环队列如何覆盖最旧元素","type":"conversation","importance":3,"createdAt":1760000400,"updatedAt":1760000400,"lastAccessedAt":1760000400,"keywords":["循环队列","数据结构"]}
+  ]
+}
