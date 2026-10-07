@@ -7,11 +7,18 @@
 
 namespace memory {
 
-MemoryManager::MemoryManager(std::size_t shortTermCapacity, std::size_t lruCapacity)
-    : store_(31), shortTerm_(shortTermCapacity), lru_(lruCapacity) {}
+MemoryManager::MemoryManager(std::size_t shortTermCapacity, std::size_t lruCapacity,
+                             TextAnalyzer analyzer)
+    : store_(31),
+      shortTerm_(shortTermCapacity),
+      lru_(lruCapacity),
+      analyzer_(std::move(analyzer)),
+      retriever_(analyzer_) {}
 
 std::optional<std::string> MemoryManager::add(Memory memory) {
     memory.validate();
+    // 录入时即完成分词，避免每次查询重复计算。
+    if (memory.keywords.empty()) memory.keywords = analyzer_.tokenize(memory.content);
     const std::string id = memory.id;
     if (!store_.insert(std::move(memory))) {
         throw std::invalid_argument("duplicate memory id: " + id);
@@ -45,11 +52,17 @@ bool MemoryManager::update(const std::string& id, const std::string& content,
     if (importance < 1 || importance > 5) throw std::invalid_argument("memory importance must be between 1 and 5");
     value->content = content;
     value->importance = importance;
-    value->keywords = std::move(keywords);
+    // 未显式给出关键词时按新正文重新分词。
+    value->keywords = keywords.empty() ? analyzer_.tokenize(content) : std::move(keywords);
     value->updatedAt = unixNow();
     value->lastAccessedAt = value->updatedAt;
     lru_.touch(id);
     return true;
+}
+
+std::vector<MemoryScore> MemoryManager::recall(const std::string& input, std::size_t k,
+                                               const ScoringWeights& weights) const {
+    return retriever_.retrieve(store_.values(), input, k, weights);
 }
 
 bool MemoryManager::remove(const std::string& id) {
@@ -61,7 +74,7 @@ void MemoryManager::save(const std::string& path) const { JsonStorage::save(path
 
 void MemoryManager::load(const std::string& path) {
     auto values = JsonStorage::load(path);  // 先完整解析，失败时保留现有数据。
-    MemoryManager replacement(shortTerm_.capacity(), lru_.capacity());
+    MemoryManager replacement(shortTerm_.capacity(), lru_.capacity(), analyzer_);
     for (auto& value : values) replacement.add(std::move(value));
     clear();
     for (auto& value : replacement.store_.values()) add(std::move(value));
